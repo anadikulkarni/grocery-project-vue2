@@ -1,9 +1,17 @@
 <template>
 <div class='homepage'>
-    <button @click="register"> Register </button>
-    <button @click="loginAdmin"> Admin Login </button>
-    <button @click="loginManager"> Manager Login </button>
-    <button @click="loginUser"> User Login </button>
+    <router-link to = "/register">
+    <button> Register </button>
+    </router-link>
+    <router-link to = "/adminlogin">
+    <button> Admin Login </button>
+    </router-link>
+    <router-link to = "/managerlogin">
+    <button> Manager Login </button>
+    </router-link>
+    <router-link to = "/userlogin">
+    <button> User Login </button>
+    </router-link>
 </div>
 </template>
 
@@ -11,9 +19,6 @@
 export default{
     name: "HomePage",
     methods: {
-        register(){
-            console.log('registered')
-        },
         loginAdmin(){
             console.log('admin logged in')
         },
