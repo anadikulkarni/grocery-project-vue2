@@ -1,5 +1,13 @@
 <template>
+<div>
+    <nav class="navbar">
+        <div class="navbar-right">
+            <button @click="home()"> Home </button>
+        </div>
+    </nav>
+</div>
     <div class="admin-login-page">
+        <h1> Admin Login </h1>
         <input type="text" v-model="username" placeholder="Username">
         <input type="password" v-model="password" placeholder="Password">
         <button @click = "login"> Log In </button>
@@ -14,9 +22,37 @@
             };
         },
         methods:{
-            login(){
-                console.log('admin logged in')
-            }
+            async login() {
+          try {
+              let response = await fetch("http://127.0.0.1:5000/admin_login", {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                      username: this.username,
+                      password: this.password
+                  })
+              });
+
+              let data = await response.json();
+
+              if (response.status === 200) {
+                  console.log('Login successful:', data.message);
+                  this.$router.push({ name: 'AdminDashboard', query: {username:this.username} });
+              } else {
+                  console.log('Login failed:', data.message);
+                  alert(data.message);
+              }
+              
+          } catch (error) {
+              console.error("There was an error during login:", error);
+              alert("There was an error during login.");
+          }
+      },
+            home(){
+                this.$router.push({name: "HomePage"});
+            },
         }
     }
     </script>

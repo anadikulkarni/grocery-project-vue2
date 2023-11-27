@@ -1,7 +1,15 @@
 <template>
+<div>
+    <nav class="navbar">
+        <div class="navbar-right">
+            <button @click="home()"> Home </button>
+        </div>
+    </nav>
+</div>
 <div class="register-page">
     <input type="text" v-model="username" placeholder="Username">
     <input type="password" v-model="password" placeholder="Password">
+    <input type="email" v-model="email" placeholder="Email">
     <input type="checkbox" v-model="isManager" id="managerCheckbox">
     <label for = "managerCheckbox"> Register as Manager? </label>
     <button @click = "register"> Register </button>
@@ -13,6 +21,7 @@ export default{
         return{
             username: '',
             password: '',
+            email: '',
             isManager: false
         };
     },
@@ -33,6 +42,7 @@ export default{
                 body: JSON.stringify({
                     username: this.username,
                     password: this.password,
+                    email: this.email,
                     isManager: this.isManager
                 })
             });
@@ -43,7 +53,10 @@ export default{
         } catch (error) {
             console.error("There was an error during registration:", error);
         }
-    }
+    },
+    home(){
+                this.$router.push({name: "HomePage"});
+            },
     }
 }
 </script>
