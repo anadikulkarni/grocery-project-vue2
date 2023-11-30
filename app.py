@@ -1,13 +1,14 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
-from flask import render_template, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, logout_user
 from flask_cors import CORS
-
-# Redis and Celery for batch jobs/caching
-# edit product default mfd not showing
+from flask_mail import Mail
+from sqlalchemy.orm import joinedload
+from io import BytesIO, TextIOWrapper
+import csv
+import redis
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:8080"], 
@@ -17,11 +18,29 @@ CORS(app, origins=["http://localhost:8080"],
 
 with open('config.json') as config_file:
     config_data = json.load(config_file)
+    
+with open('password.json') as config_file2:
+    password = json.load(config_file2)
 
 app.config['SECRET_KEY'] = config_data['SECRET_KEY']
 app.config['SQLALCHEMY_DATABASE_URI'] = config_data['SQLALCHEMY_DATABASE_URI']
 app.config['MAIL_SERVER'] = config_data['MAIL_SERVER']
+app.config['MAIL_PORT'] = config_data['MAIL_PORT']
+app.config['MAIL_USERNAME'] = config_data['MAIL_USERNAME']
+app.config['MAIL_PASSWORD'] = password['MAIL_PASSWORD']
+app.config['MAIL_USE_TLS'] = config_data['MAIL_USE_TLS']
+app.config['MAIL_USE_SSL'] = config_data['MAIL_USE_SSL']
+app.config['CELERY_BROKER_URL'] = config_data['CELERY_BROKER_URL']
+app.config['CELERY_RESULT_BACKEND'] = config_data['CELERY_RESULT_BACKEND']
+
+redis_client = redis.StrictRedis.from_url(app.config['CELERY_BROKER_URL'])
+
 db = SQLAlchemy(app)
+
+mail = Mail(app)
+
+def create_app():
+    return app
 
 admin_creds = {'username' : 'admin',
                'password': 'password'}
@@ -126,6 +145,12 @@ class ApprovalRequest(db.Model):
 
     def _repr_(self):
         return f"ApprovalRequest('{self.username}', '{self.category}', '{self.action}')"
+    
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -324,17 +349,18 @@ def decline_request(request_id):
 
 @app.route('/categories', methods=['GET'])
 def category():
-    username = request.args.get("username", default=None)
+    username = request.args.get('username', None)
     current_user = User.query.filter_by(username=username).first()
     manager = Manager.query.filter_by(username=username).first()
+
     if manager:
         if (current_user.is_authenticated):
             categories = Category.query.all()
-            category_list = [category.as_dict() for category in categories if category]
-            return jsonify({"categories": category_list, "manager": username})
+            categories_list = [category.as_dict() for category in categories if category]
+            return jsonify({"categories": categories_list, "manager": username}), 200
         else:
-            logout_user()
-            return jsonify({"message": "Manager not authenticated", "status": "fail"}), 401
+            print(current_user.is_authenticated)
+            return jsonify({"message": "Login failed. Invalid user.", "status": "fail"}), 401
     else:
         return jsonify({"message": "Invalid manager", "status": "fail"}), 404
     
@@ -656,7 +682,42 @@ def buy_all():
     else:
         logout_user()
         return jsonify({'status': 'error',
-            "message": "User not authenticated", "status": "fail"}), 401        
+            "message": "User not authenticated", "status": "fail"}), 401     
+        
+@app.route('/export_csv', methods=['GET'])
+def export_csv():
+    username = request.args.get("username", default=None)
+    current_user = User.query.filter_by(username=username).first()
+    manager = Manager.query.filter_by(username=username).first()
+    if manager:
+        if (current_user.is_authenticated):
+            categories = Category.query.options(joinedload(Category.products)).all()
+            bIO = BytesIO()
+            textstream = TextIOWrapper(bIO, encoding="utf-8")
+            cw = csv.writer(textstream)
+            headers = ['Category ID', 'Category Name', 'Product ID', 'Product Name', 'Unit', 'Price/Unit', 'Quantity', 'Manufacturing Date']
+            cw.writerow(headers)
+            for category in categories:
+                for product in category.products:
+                    cw.writerow([
+                        category.id,
+                        category.name,
+                        product.id,
+                        product.productName,
+                        product.unit,
+                        product.rateUnit, 
+                        product.quantity,
+                        product.mfd.strftime("%Y-%m-%d") if product.mfd else '',
+                    ])
+            textstream.flush()
+            textstream.detach()
+            bIO.seek(0)
+            return send_file(bIO, mimetype="text/csv", as_attachment=True, download_name="product_export_table.csv")
+        else:
+            logout_user()
+            return jsonify({"message": "Manager not authenticated", "status": "fail"}), 401
+    else:
+        return jsonify({"message": "Invalid manager", "status": "fail"}), 404   
 
 with app.app_context():
    db.create_all()

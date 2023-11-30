@@ -1,15 +1,16 @@
 <template>
-    <div>
-    <nav class="navbar">
-        <div class="navbar-left">
-            <span id="manager-username"> {{ managerUsername }}'s Dashboard </span>
+<div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="navbar-brand">
+            <span> {{ managerUsername }}'s Dashboard </span>
         </div>
-        <div class="navbar-right">
-            <button> Summary </button>
-            <button @click="logout()"> Logout </button>
-        </div>
+        <div class="ml-auto">
+            <button class="btn btn-outline-primary" @click="logout()"> Logout </button>
+        </div> 
     </nav>
-    </div>
+</div>
+<br>
+    <button class="btn btn-primary mb-3 position-relative" @click="exportProductAsCSV()"> Export Product Information </button>
     <div id="categories-container">
         <div v-for="category in categories" :key="category.id" class="category-div" :id="category.id">
             <h2> {{category.name}} </h2>
@@ -22,8 +23,8 @@
             </div> 
             <button @click="showCreateProductPopup(category.id)" class="add-btn">    
             </button> <br> <br>
-            <button @click="showEditCategoryPopup(category.id)" class="edit-btn"> Edit </button>
-            <button @click="deleteCategory(category.id)" class="delete-btn"> Delete </button>
+            <button @click="showEditCategoryPopup(category.id)" class="btn btn-warning"> Edit </button> &nbsp;&nbsp;
+            <button @click="deleteCategory(category.id)" class="btn btn-danger"> Delete </button>
         </div>
     </div>
     <div v-if="isCreateProductVisible" id="add-product-overlay">
@@ -42,8 +43,8 @@
             </select>
             <input type="number" name="Rate/Unit" placeholder="Rs:" required id="rate-unit">
             <input type="number" name="Quantity" placeholder="number of items" required id="quantity">
-            <input type="date" name="Manufacture Date" required id="mfd">
-            <button type="button" id="addProductSubmit" @click="saveProduct()"> Submit </button>
+            <input type="date" name="Manufacture Date" required id="mfd"> <br>
+            <button type="button" class="btn btn-primary" id="addProductSubmit" @click="saveProduct()"> Submit </button>
         </form>
     </div>
     </div>
@@ -64,7 +65,7 @@
                 <input type="number" name="Rate/Unit" placeholder="Rs:" required id="edit-rate-unit" v-model="productRate">
                 <input type="number" name="Quantity" placeholder="number of items" required id="edit-quantity" v-model="productQuantity">
                 <input type="date" name="Manufacture Date" required id="edit-mfd">
-                <button type="button" id="edit-productSubmit" @click="editProduct()"> Submit </button>
+                <button type="button" class="btn btn-primary" id="edit-productSubmit" @click="editProduct()"> Submit </button>
             </form>
         </div>
         </div>
@@ -320,7 +321,7 @@ export default{
             .then(response => response.json())
             .then(data => {
                 if(data.status === 'success') {
-                    alert('Category deleted successfully!');
+                    alert('Category delete request sent successfully!');
                     window.location.reload();
                 } else {
                     alert('Error deleting category!');
@@ -337,6 +338,24 @@ export default{
                 });
             this.$router.push({name: "HomePage"});
         },
+        async exportProductAsCSV(){
+            await fetch(`http://127.0.0.1:5000/export_csv?username=${this.$route.query.username}`,{
+                    method: 'GET',
+                    credentials: 'include',
+                })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const tempA = document.createElement("a");
+                tempA.style.display = "none";
+                tempA.href = url;
+                tempA.download = 'product_export_table.csv';
+                document.body.appendChild(tempA);
+                tempA.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(() => alert('There was an error in downloading your file'));
+        },
     },
     mounted(){
         this.fetchUserAndCategories();
@@ -344,20 +363,26 @@ export default{
 }
 </script>
 
-<style>
+<style scoped>
 body {
             font-family: 'Playfair', serif;
         }
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #333;
-            color: white;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-            font-family: 'Playfair', serif;
-        }
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #333;
+        color: white;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        position: fixed; 
+        top: 0; 
+        left: 0;  
+        width: 100%; 
+        z-index: 1000;
+        box-sizing: border-box; 
+        padding-right: 15px;
+}
         .navbar-left, .navbar-right {
             display: flex;
             align-items: center;
@@ -398,7 +423,7 @@ body {
         }
         .category-div {
             width: 300px; 
-            height: 300px; 
+            height: 400px; 
             margin: 60px auto; 
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1), 0px 6px 20px rgba(0, 0, 0, 0.13); 
             overflow-y: auto; 
@@ -545,7 +570,7 @@ body {
             right: 85px;
         }
         .products-container {
-            height: 40%;
+            height: 55%;
             overflow-y: auto; 
             padding: 10px; 
             border-radius: 5px; 

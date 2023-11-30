@@ -3,7 +3,9 @@
     "SQLALCHEMY_DATABASE_URI": "sqlite:///site.db",
     "MAIL_SERVER": "smtp.gmail.com",
     "MAIL_PORT": 587,
-    "MAIL_USERNAME": "roguemastervaleera@gmail.com",
+    "MAIL_USERNAME": "tracerswaifu@gmail.com",
     "MAIL_USE_TLS": true,
-    "MAIL_USE_SSL": false
+    "MAIL_USE_SSL": false,
+    "CELERY_BROKER_URL": "redis://localhost:6379/0",
+    "CELERY_RESULT_BACKEND": "redis://localhost:6379/0"
 }

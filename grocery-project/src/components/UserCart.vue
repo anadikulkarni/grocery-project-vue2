@@ -1,16 +1,17 @@
 <template>
-    <div>
-    <nav class="navbar">
-        <div class="navbar-left">
-            <span id="username">{{ username }}'s cart </span>
+<div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="navbar-brand">
+            <span id="username"> {{ username }}'s Cart </span>
         </div>
-        <div class="navbar-right">
-            <button @click="goToDashboard()"> Dashboard </button>
-            <button @click="logout()"> Logout </button>
-        </div>
+        <div class="ml-auto">
+            <button class="btn btn-outline-primary" @click="goToDashboard()"> Dashboard </button>
+            <button class="btn btn-outline-primary" @click="logout()"> Logout </button>
+        </div> 
     </nav>
-    </div>
-    <div id="cart-container">
+</div>
+<br>
+    <!-- <div id="cart-container">
         <input type="hidden" id="hidden-user-id" :value="userID">
         <div class="cart-item" v-for="item in items" :key="item.ID">
         <span> {{item.category}} - {{item.productName}} </span>
@@ -19,10 +20,36 @@
         <span class="item-total" :data-item-total="item.quantity*item.rateUnit"> Total: &#8377;{{item.quantity*item.rateUnit}}</span>
         <button class="remove-button" @click="removeItem(item.id)"> Remove </button>
         </div>
-    </div>
-    <div class="grand-total-section">
-        <span class="grand-total-display"> Grand Total: &#8377;{{ grandTotal }} </span>
-        <button class="buy-all-button" @click="buyAll()"> Buy All </button>
+    </div> -->
+    <div id="cart-container">
+        <input type="hidden" id="hidden-user-id" :value="userID">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th> Product - Category </th>
+                    <th> Quantity </th>
+                    <th> Price/Unit </th>
+                    <th> Total </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in items" :key="item.ID">
+                    <td> {{item.category}} - {{item.productName}} </td>
+                    <td> {{item.quantity}} {{item.unit}} </td>
+                    <td> &#8377;{{item.rateUnit}}/{{item.unit}} </td>
+                    <td> <span :data-item-total="item.quantity*item.rateUnit"> Total: &#8377;{{item.quantity*item.rateUnit}}</span> </td>
+                    <td> <button class="remove-button" @click="removeItem(item.id)"> Remove </button> </td>
+                </tr>
+                <tr>
+                    <td> </td>
+                    <td></td>
+                    <td> </td>
+                    <td><span class="grand-total-display"> Grand Total: &#8377;{{ grandTotal }} </span></td>
+                    <td> <button class="btn btn-primary" @click="buyAll()"> Buy All </button></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </template>
 <script>
@@ -114,40 +141,42 @@
         },
     }
 </script>
-<style>
+<style scoped>
 body {
             font-family: 'Playfair', serif;
         }
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #333;
-            color: white;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-            font-family: 'Playfair', serif;
-        }
-        .navbar-left, .navbar-right {
-            display: flex;
-            align-items: center;
-        }
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 20px;
+          background-color: #333;
+          color: white;
+          box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+          position: fixed; 
+          top: 0; 
+          left: 0;  
+          width: 100%; 
+          z-index: 1000;
+          box-sizing: border-box; 
+          padding-right: 15px;
+      }
+        .navbar button {
+          margin-left: 10px;
+          padding: 5px 15px;
+          background-color: #555;
+          color: white;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.3s;
+      }
+
+      .navbar button:hover {
+          background-color: #777;
+      }
         #manager-username {
             margin-right: 20px;
             font-weight: bold;
-        }
-        .navbar button {
-            margin-left: 10px;
-            padding: 5px 15px;
-            background-color: #999;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-family: 'Playfair', serif;
-        }
-        .navbar button:hover {
-            background-color: #777;
         }
         .cart-item {
             border: 1px solid #ddd;

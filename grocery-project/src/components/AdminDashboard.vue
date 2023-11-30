@@ -1,78 +1,83 @@
 <template>
 <div>
-    <nav class="navbar">
-        <div class="navbar-left">
-            <span id="admin-username"> {{ adminUsername }}'s Dashboard </span>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="navbar-brand">
+            <span> {{ adminUsername }}'s Dashboard </span>
         </div>
-        <div class="navbar-right">
-            <button> Summary </button>
-            <button @click="logout()"> Logout </button>
-        </div>
+        <div class="ml-auto">
+            <button class="btn btn-outline-primary" @click="logout()"> Logout </button>
+        </div> 
     </nav>
 </div>
-<div>
-    <button @click="showRequests = !showRequests"> Show Pending Requests </button>
-    <div v-if="showRequests">
-        <table>
-            <thead> 
-                <tr>
-                 <th>Username</th>
-                 <th>Category</th>
-                 <th>Action</th>
-                 <th>Approve </th>
-                 <th>Decline </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="request in requests" :key="request.id">
-                    <td> {{ request.username }}</td>
-                    <td> {{  request.category }}</td>
-                    <td> {{ request.action }}</td>
-                    <td> <button @click="approveRequest(request.id)"> Approve </button></td>
-                    <td> <button @click="declineRequest(request.id)"> X </button></td>
-                </tr>
-            </tbody>
+<br>
+<div class="container mt-5">
+      <button class="btn btn-primary mb-3 position-relative" @click="showRequests = !showRequests">
+        Pending Requests
+        <span class="badge-number">{{ numberOfPendingRequests }}</span>
+      </button>
+      <div v-if="showRequests">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Category</th>
+              <th>Action</th>
+              <th>Approve Request</th>
+              <th>Decline Request</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="request in requests" :key="request.id">
+              <td>{{ request.username }}</td>
+              <td>{{ request.category }}</td>
+              <td>{{ request.action }}</td>
+              <td><button class="btn btn-success" @click="approveRequest(request.id)">Approve</button></td>
+              <td><button class="btn btn-danger" @click="declineRequest(request.id)">Decline</button></td>
+            </tr>
+          </tbody>
         </table>
+      </div>
     </div>
-    <div>
-        <div id="categories-container">
-        <div v-for="category in categories" :key="category.id" class="category-div" :id="category.id">
-            <h2> {{category.name}} </h2>
-            <button @click="showEditCategoryPopup(category.id)" class="edit-btn"> Edit </button>
-            <button @click="deleteCategory(category.id)" class="delete-btn"> Delete </button>
-        </div>
+    <div id="categories-container" class="container mt-3">
+      <div v-for="category in categories" :key="category.id" class="category-div" :id="category.id">
+        <h2>{{ category.name }}</h2>
+        <button class="btn btn-warning" @click="showEditCategoryPopup(category.id)">Edit</button> &nbsp;&nbsp;&nbsp;
+        <button class="btn btn-danger" @click="deleteCategory(category.id)">Delete</button>
+      </div>
+      <button id="openBtn" class="btn btn-primary" @click="showCreateCategoryPopup()">Create Category</button>
     </div>
-    <button id="add_cat" @click="showCreateCategoryPopup()"> Add Category </button>
-    <div id="overlay" v-if="isCreateCategoryVisible">
-        <div id="popup">
-            <span class="close-button" @click="hideCreateCategoryPopup()"> &times; </span>
-            <input type="text" v-model="newCategoryName" id="cat_name" placeholder="category name">
-            <button id="save_cat" @click="saveCategory()"> Save </button>
-        </div>
+  <div v-if="isCreateCategoryVisible" id="create-category-overlay">
+    <div id="create-category-popup">
+      <button class="close-btn" @click="isCreateCategoryVisible = false">&times;</button>
+      <input type="text" v-model="newCategoryName" placeholder="Create a category">
+      <br>
+      <button id="saveBtn" class="btn btn-primary" @click="saveCategory">Save</button>
     </div>
-    <div v-if="isEditCategoryVisible" id="edit-category-overlay">
-        <div id="edit-category-popup">
-            <input type="hidden" id="edit-category-id-hidden" v-model="categoryID">
-            <span class="close-button" @click="hideEditCategoryPopup()"> &times; </span>
-            <input type="text" id="edit-categoryName" placeholder="change category name">
-            <button @click="updateCategory()" id="category-update-button"> Update </button>
-        </div>
+  </div>
+  <div v-if="isEditCategoryVisible" id="edit-category-overlay">
+    <div id="edit-category-popup">
+      <button class="close-btn" @click="isEditCategoryVisible = false">&times;</button>
+      <input type="hidden" v-model="categoryId" id="editing-category-id-hidden" name="category_name">
+      <input type="text" id="new-category-name" placeholder="Edit category name">
+      <br>
+      <button id="updateBtn" class="btn btn-primary" @click="updateCategory">Update</button>
     </div>
-    </div>
-</div>
+  </div>
 </template>
 
 <script>
 export default{
     data(){
         return{
-            requests:[], showRequests: false,
+            requests:[], 
+            showRequests: false,
             adminUsername: '',
             categories: [],
             isCreateCategoryVisible: false,
             isEditCategoryVisible: false,
             newCategoryName: '',
             categoryID: null,
+            numberOfPendingRequests: 0,
             editingCategory: {
                 id: null,
                 name: '',
@@ -94,6 +99,7 @@ export default{
                 this.categories = data.categories;
                 console.log(this.categories);
                 this.adminUsername = data.admin;
+                this.numberOfPendingRequests = this.requests.length;
             }
             catch(error){
                 console.log(error);
@@ -232,6 +238,209 @@ export default{
 }
 </script>
 
-<style>
+<style scoped>
+    body{
+        font-family: 'Playfair', serif;
+    }
+    table {
+      width: 50%;
+      border-collapse: collapse;
+      margin: auto;
+    }
+    
+    th, td {
+      padding: 0px;
+      text-align: center;
+    }
+    .badge-number {
+      position: absolute;
+      top: -10px; /* Adjust these values as needed */
+      right: -10px;
+      width: 20px; /* Badge size */
+      height: 20px;
+      background-color: red;
+      color: white;
+      border-radius: 50%; /* Circular shape */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 12px; /* Font size of the number */
+    }
 
+          #create-category-overlay, #edit-category-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+    }
+
+/* Popup Styles */
+      #create-category-popup, #edit-category-popup {
+        position: relative;
+        top: 50%;
+        left: 50%;
+        width: 300px;
+        padding: 20px;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        text-align: center;
+        border-radius: 10px;
+      }
+
+      /* Close Button Styles */
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+        font-size: 20px;
+      }
+
+      /* Input and Button Spacing */
+      input[type="text"] {
+        margin-bottom: 15px; /* Add margin to create space */
+      }
+
+      #categories-container {
+          display: flex;
+          align-items: left;
+          justify-content: center;
+          flex-wrap: wrap;
+      }
+
+      .category-div {
+          width: 300px; 
+          height: 140px; 
+          margin: 60px auto; 
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1), 0px 6px 20px rgba(0, 0, 0, 0.13); 
+          overflow-y: auto; 
+          padding: 20px;
+          border-radius: 8px; 
+          background-color: #ffffff;
+          text-align: center;
+          vertical-align: top;
+          position: relative;
+      }
+
+      /* #edit-category-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          z-index: 1;
+      }
+
+      #edit-category-popup {
+          position: relative;
+          top: 50%;
+          left: 50%;
+          width: 300px;
+          padding: 20px;
+          transform: translate(-50%, -50%);
+          background-color: #fff;
+          text-align: center;
+          border-radius: 10px;
+      } */
+
+      .navbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 20px;
+          background-color: #333;
+          color: white;
+          box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+          position: fixed; 
+          top: 0; 
+          left: 0;  
+          width: 100%; 
+          z-index: 1000;
+          box-sizing: border-box; 
+          padding-right: 15px;
+      }
+      #admin-username {
+          margin-right: 20px;
+          font-weight: bold;
+      }
+
+      .navbar button {
+          margin-left: 10px;
+          padding: 5px 15px;
+          background-color: #555;
+          color: white;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.3s;
+      }
+
+      .navbar button:hover {
+          background-color: #777;
+      }
+      #openBtn {
+          position: fixed;  
+          bottom: 20px;       
+          right: 20px;      
+          background-color: #008CBA; 
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 50px; 
+          font-size: 16px;
+          cursor: pointer;
+          transition: background-color 0.3s ease-in-out;
+          z-index: 1000;  
+      }
+
+      #openBtn:hover {
+          background-color: #006c99;
+      }
+
+      .category-div button.add-btn {
+          background-color: #008CBA; 
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          position: relative;
+          margin-top: 10px;
+      }
+
+      .category-div button.add-btn:hover {
+          cursor: pointer;
+      }
+
+      .category-div button.add-btn::before {
+          content: '+';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-weight: bold;
+      }
+
+      .category-div button.edit-btn, .category-div button.delete-btn {
+          width: 80px; 
+          height: 35px; 
+          line-height: 35px; 
+          border: none;
+          border-radius: 15px; 
+          display: inline-block; 
+          font-size: 14px;
+          text-align: center;
+          margin-top: 10px;
+          position: absolute; 
+          bottom: 10px;
+      }
+
+      .category-div button.edit-btn, .category-div button.delete-btn:hover {
+          cursor: pointer;
+      }
 </style>

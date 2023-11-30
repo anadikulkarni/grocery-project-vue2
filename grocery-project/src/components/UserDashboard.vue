@@ -1,17 +1,17 @@
 <template>
-    <div>
-    <nav class="navbar">
-        <div class="navbar-left">
-            <span id="username">{{ user }}'s dashboard </span>
+<div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="navbar-brand">
+            <span id="username"> {{ user }}'s Dashboard </span>
         </div>
-        <div class="navbar-right">
-            <button @click="goToCart()"> Cart </button>
-            <button @click="logout()"> Logout </button>
-        </div>
+        <div class="ml-auto">
+            <button class="btn btn-outline-primary" @click="goToCart()"> Cart </button>
+            <button class="btn btn-outline-primary" @click="logout()"> Logout </button>
+        </div> 
     </nav>
-    </div>
-    <div class="filter-button-container">
-        <button @click="showFilterPopup()"> Search </button>
+</div>
+    <div class="container mt-5"> <br>
+        <button class="btn btn-primary mb-3 position-relative" @click="showFilterPopup()"> Search </button>
     </div>
     <div v-if="filterPopupVisible" class="popup">
         <div class="popup-content">
@@ -35,7 +35,7 @@
                 <label for="mfd-date-min"> Manufactured After Date: </label>
                 <input type="date" id="mfd-date-min" v-model="mfdDateMin">
             </div>
-            <button @click="applyFilters()"> Search </button>
+            <button class="btn btn-primary mb-3 position-relative" @click="applyFilters()"> Search </button>
         </div>
     </div>
     <div class="container">
@@ -80,7 +80,7 @@
             <div class="popup-price">
                 Total Price: &#8377;<span id="add-to-cart-total-price">{{ cartTotalPrice }}</span>
             </div>
-            <button @click="finalizeAddToCart()"> Add to Cart </button>
+            <button class="btn btn-primary mb-3 position-relative" @click="finalizeAddToCart()"> Add to Cart </button>
         </div>
     </div>
 </template>
@@ -286,41 +286,43 @@ export default{
 }
 </script>
 
-<style>
+<style scoped>
 body {
             font-family: 'Playfair', serif;
             padding-top: 60px;
         }
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #333;
-            color: white;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-            font-family: 'Playfair', serif;
-        }
-        .navbar-left, .navbar-right {
-            display: flex;
-            align-items: center;
-        }
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 20px;
+          background-color: #333;
+          color: white;
+          box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+          position: fixed; 
+          top: 0; 
+          left: 0;  
+          width: 100%; 
+          z-index: 1000;
+          box-sizing: border-box; 
+          padding-right: 15px;
+      }
+        .navbar button {
+          margin-left: 10px;
+          padding: 5px 15px;
+          background-color: #555;
+          color: white;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.3s;
+      }
+
+      .navbar button:hover {
+          background-color: #777;
+      }
         #manager-username {
             margin-right: 20px;
             font-weight: bold;
-        }
-        .navbar button {
-            margin-left: 10px;
-            padding: 5px 15px;
-            background-color: #999;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-family: 'Playfair', serif;
-        }
-        .navbar button:hover {
-            background-color: #777;
         }
         .container {
             width: 80%;
